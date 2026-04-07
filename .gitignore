@@ -1,0 +1,14 @@
+# Ignore large data files
+forces_distribution/forces_cache/*.parquet
+
+# Ignore generated plots if they are large
+# forces_distribution/plots/*.pdf  # Uncomment if plots are too large
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# OS files
+.DS_Store
+Thumbs.db
