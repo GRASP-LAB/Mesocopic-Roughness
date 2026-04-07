@@ -1,0 +1,2 @@
+forces_distribution/forces_cache/*.parquet filter=lfs diff=lfs merge=lfs -text
+forces_distribution/forces_cache/forces_rod.parquet.part_* filter=lfs diff=lfs merge=lfs -text
