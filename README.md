@@ -69,8 +69,4 @@ Simulation data is stored in text files with the following formats:
 
 If you use this code or data in your research, please cite the associated scientific article:
 
-[Add citation details here]
-=======
-# Mesocopic-Roughness
-Analysis scripts and data for granular material simulations involving rods, crosses, stars, and spheres. Includes force distributions, packing heights, overlap calculations, and contact analysis supporting scientific article findings.
->>>>>>> b74bf789c3dc0de478a160f1a00de209093bf249
+(later)
