@@ -10,7 +10,9 @@ This repository contains Python scripts and data for analyzing simulations of gr
 
 ### `forces_distribution/`
 - `forces_distribution.py`: Main script for analyzing force distributions (normal and tangential forces).
-- `forces_cache/`: Directory containing cached force data.
+- `forces_cache/`: Directory containing cached force data (large files stored via Git LFS).
+  - `forces_cross.parquet`, `forces_star.parquet`: Force data for cross and star shapes.
+  - `forces_rod.parquet.part_*`: Split parts of the large rod force data file (reconstruct with `cat forces_rod.parquet.part_* > forces_rod.parquet`).
 - `plots/`: Output directory for generated plots.
   - `fit_parameters/`: Fitted parameters for force distributions (rod, cross, star).
 
@@ -24,6 +26,19 @@ This repository contains Python scripts and data for analyzing simulations of gr
 - `plotting_utils_overlap.py`: Utility functions for overlap plotting.
 - `cleaned_overlap_density.csv`: Cleaned overlap density data.
 - `overlap_density_meaned_distrib_new_data.txt`: Processed overlap density distributions.
+
+## Data Files
+
+Large data files are stored using Git LFS. To access them:
+1. Install Git LFS: `git lfs install`
+2. Clone the repository: `git clone https://github.com/GRASP-LAB/Mesocopic-Roughness.git`
+3. The large files will be downloaded automatically.
+
+For the split rod data file, reconstruct it locally:
+```bash
+cd forces_distribution/forces_cache
+cat forces_rod.parquet.part_* > forces_rod.parquet
+```
 
 ## Requirements
 
