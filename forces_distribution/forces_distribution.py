@@ -6,6 +6,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from matplotlib.lines import Line2D
+import io
 
 # ─────────────────────────────────────────────
 # CONFIG
@@ -129,25 +130,40 @@ for value_col in VALUE_COLS:
     ax_all.grid(True, ls="--", alpha=0.3, which="both")
 
     for t in TYPES:
-        parquet_path = os.path.join(FORCES_CACHE_DIR, f"forces_{t}.parquet")
-        if not os.path.exists(parquet_path):
-            print(f"  [skip] {parquet_path} not found")
-            continue
+        if t == "rod":
+            # Load all rod parts by concatenating bytes
+            parts = sorted([os.path.join(FORCES_CACHE_DIR, f) for f in os.listdir(FORCES_CACHE_DIR) if f.startswith("forces_rod.parquet.part_")])
+            if not parts:
+                print(f"  [skip] no rod parts found")
+                continue
+            print(f"\n  [load] concatenating {len(parts)} rod parts …", flush=True)
+            data = b""
+            for p in parts:
+                with open(p, "rb") as f:
+                    data += f.read()
+            buffer = io.BytesIO(data)
+            forces_long = pd.read_parquet(buffer, engine="pyarrow")
+            buffer.close()
+        else:
+            parquet_path = os.path.join(FORCES_CACHE_DIR, f"forces_{t}.parquet")
+            if not os.path.exists(parquet_path):
+                print(f"  [skip] {parquet_path} not found")
+                continue
 
-        # ── 1. LOAD ──────────────────────────────────────────────
-        print(f"\n  [load] {parquet_path} …", flush=True)
-        chunk_size = 500_000
-        raw_df     = pd.read_parquet(parquet_path, engine="pyarrow")
-        n_rows     = len(raw_df)
-        n_chunks   = max(1, n_rows // chunk_size)
-        chunks     = []
-        for ci in range(n_chunks):
-            s, e = ci * chunk_size, min((ci+1) * chunk_size, n_rows)
-            chunks.append(raw_df.iloc[s:e].copy())
-            progress_bar(ci+1, n_chunks,
-                         label=f"reading chunk {ci+1}/{n_chunks}  ({e:,}/{n_rows:,} rows)")
-        forces_long = pd.concat(chunks, ignore_index=True)
-        del raw_df, chunks
+            # ── 1. LOAD ──────────────────────────────────────────────
+            print(f"\n  [load] {parquet_path} …", flush=True)
+            chunk_size = 500_000
+            raw_df     = pd.read_parquet(parquet_path, engine="pyarrow")
+            n_rows     = len(raw_df)
+            n_chunks   = max(1, n_rows // chunk_size)
+            chunks     = []
+            for ci in range(n_chunks):
+                s, e = ci * chunk_size, min((ci+1) * chunk_size, n_rows)
+                chunks.append(raw_df.iloc[s:e].copy())
+                progress_bar(ci+1, n_chunks,
+                             label=f"reading chunk {ci+1}/{n_chunks}  ({e:,}/{n_rows:,} rows)")
+            forces_long = pd.concat(chunks, ignore_index=True)
+            del raw_df, chunks
         gc.collect()
         print(f"  [load] done – {len(forces_long):,} rows", flush=True)
 
