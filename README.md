@@ -1,89 +1,127 @@
 # Granular Material Simulation Analysis
 
-This repository contains Python scripts and data for analyzing simulations of granular materials composed of rods, crosses, stars, and spheres. The analysis focuses on force distributions, maximum packing heights, overlap calculations, and contact statistics, supporting the findings presented in the associated scientific article.
+This repository contains the analysis scripts and processed data used to study granular materials made of rods, crosses, stars, and spheres. The analyses cover contacts, force distributions, packing height and fraction, overlap, and simulation time.
 
 ## Repository Structure
 
-### `contact/`
-- `contact.py`: Script for analyzing contact statistics between spheres and rods/crosses/stars.
-- `contact_mean_std_sph_p_rod.txt`: Mean and standard deviation data for contacts per sphere per rod.
+### `contact_clump_clump/`
+
+Analyzes contacts between clump particles and rods, crosses, and stars.
+
+- `contact.py`: Computes contact statistics.
+- `z_vs_packing_fraction.py`: Plots coordination number versus packing fraction.
+- `contact_mean_std_sph_p_rod.txt`: Contact mean and standard-deviation data.
+- `packing_fraction_mean_std_n_spheres_per_rod.txt`: Packing-fraction data.
+
+### `contact_sphere_sphere/`
+
+Analyzes sphere-sphere contacts.
+
+- `contact.py`: Computes sphere-sphere contact statistics.
+- `z_vs_packing_fraction.py`: Plots coordination number versus packing fraction.
+- `sphere_contact_mean_std_sph_p_rod.txt`: Sphere-contact mean and standard-deviation data.
+- `packing_fraction_mean_std_n_spheres_per_rod.txt`: Packing-fraction data.
 
 ### `forces_distribution/`
-- `forces_distribution.py`: Main script for analyzing force distributions (normal and tangential forces).
-- `forces_cache/`: Directory containing cached force data (large files stored via Git LFS).
-  - `forces_cross.parquet`, `forces_star.parquet`: Force data for cross and star shapes.
-  - `forces_rod.parquet.part_*`: Split parts of the large rod force data file (reconstruct with `cat forces_rod.parquet.part_* > forces_rod.parquet`).
-- `plots/`: Output directory for generated plots.
-  - `fit_parameters/`: Fitted parameters for force distributions (rod, cross, star).
+
+Analyzes normalized normal (`Fn`) and tangential (`Ft`) force distributions for rods, crosses, and stars.
+
+- `forces_distribution.py`: Loads the cached force data, selects the last frame, builds per-seed histograms, and fits exponential distributions.
+- `forces_cache/`: Parquet force data. The rod data is split into `forces_rod.parquet.part_*` files.
+- `plots/`: Generated distribution plots and fitted parameters.
+- `plots/fit_parameters_all.csv`: Combined fit parameters.
+- `plots/fit_parameters/`: Per-shape and per-force-component fit parameters.
 
 ### `maximum_height_packing/`
-- `max_height_packing.py`: Script for analyzing maximum packing heights and packing fractions.
-- `maximum_height_mean_std_n_spheres_per_rod.txt`: Mean and std data for maximum heights.
-- `packing_fraction_mean_std_n_spheres_per_rod.txt`: Mean and std data for packing fractions.
+
+Analyzes maximum pile height and packing fraction as a function of mesoscopic roughness.
+
+- `max_height_packing_piecewise.py`: Piecewise height and packing model.
+- `max_height_packing_piecewise_micro_model.py`: Piecewise model including microscopic friction modulation.
+- `maximum_height_mean_std_n_spheres_per_rod.txt`: Maximum-height mean and standard-deviation data.
+- `packing_fraction_mean_std_n_spheres_per_rod.txt`: Packing-fraction mean and standard-deviation data.
 
 ### `overlap/`
-- `deltan.py`: Script for calculating overlap parameters and material properties.
-- `plotting_utils_overlap.py`: Utility functions for overlap plotting.
-- `cleaned_overlap_density.csv`: Cleaned overlap density data.
-- `overlap_density_meaned_distrib_new_data.txt`: Processed overlap density distributions.
 
-## Data Files
+Contains overlap-density data and calculations for contact-model parameters.
 
-Large data files are stored using Git LFS. To access them:
-1. Install Git LFS: `git lfs install`
-2. Clone the repository: `git clone https://github.com/GRASP-LAB/Mesocopic-Roughness.git`
-3. The large files will be downloaded automatically.
+- `deltan.py`: Calculates material/contact constants and estimates normalized overlap.
+- `plotting_utils_overlap.py`: Plotting utilities for overlap analysis.
+- `cleaned_overlap_density.csv`: Cleaned overlap-density data.
+- `overlap_density_meaned_distrib_new_data.txt`: Processed mean overlap-density distributions.
 
-For the split rod data file, reconstruct it locally:
-```bash
-cd forces_distribution/forces_cache
-cat forces_rod.parquet.part_* > forces_rod.parquet
-```
+### `simu_time/`
+
+Analyzes simulation time versus mesoscopic roughness.
+
+- `plot_simulation_time_vs_mu.py`: Reads the combined simulation-time data and generates a log-log plot.
+- `simulation_time_mean_std_n_spheres_per_rod_all.txt`: Combined simulation-time mean and standard-deviation data.
+- `total.txt`: Additional simulation-time data.
 
 ## Requirements
 
-- Python 3.7+
+Python 3.7 or newer is recommended. The scripts use:
+
 - NumPy
 - Pandas
 - Matplotlib
 - SciPy
+- PyArrow (required by the force-distribution script to read Parquet files)
 
-Install dependencies using pip:
+Install the dependencies with:
+
 ```bash
-pip install numpy pandas matplotlib scipy
+python -m pip install numpy pandas matplotlib scipy pyarrow
 ```
 
 ## Usage
 
-Each analysis script can be run independently. Navigate to the respective folder and execute the Python script:
+The scripts with relative paths should be run from their containing directory:
 
 ```bash
-cd contact
+cd contact_clump_clump
 python contact.py
+python z_vs_packing_fraction.py
+
+cd ../contact_sphere_sphere
+python contact.py
+python z_vs_packing_fraction.py
 
 cd ../forces_distribution
 python forces_distribution.py
 
 cd ../maximum_height_packing
-python max_height_packing.py
+python max_height_packing_piecewise.py
+python max_height_packing_piecewise_micro_model.py
 
 cd ../overlap
 python deltan.py
+
+cd ../simu_time
+python plot_simulation_time_vs_mu.py
+```
+Generated plots are written to the relevant analysis directory. Existing generated PDF files are analysis artifacts and may be regenerated by rerunning the corresponding script.
+
+## Data Formats
+
+Most mean and standard-deviation text files are organized as repeated blocks:
+
+```text
+# series_name
+x mean std
 ```
 
-Plots and fitted parameters will be saved in the respective directories.
+The force data is stored as Parquet files. The rod data is split into parts because of its size; reconstruct it before using tools that expect a single file:
 
-## Data Format
+```bash
+cd forces_distribution/forces_cache
+cat forces_rod.parquet.part_* > forces_rod.parquet
+```
 
-Simulation data is stored in text files with the following formats:
-- Mean/std data: `# type\nn_spheres mean std`
-- Force data: Cached numpy arrays in `forces_cache/`
-- Overlap data: CSV format with density distributions
+The overlap data is stored as CSV and processed text distributions.
 
 ## Citation
 
-If you use this code or data in your research, please cite the associated scientific article:
+If you use this code or data in your research, please cite:
 
-[Add citation details here]
-
-(later)
+Luyckx, A., & Opsomer, E. (2026). *Impact of Particle Roughness on Packing*. Springer Science and Business Media LLC. https://doi.org/10.21203/rs.3.rs-9354781/v1

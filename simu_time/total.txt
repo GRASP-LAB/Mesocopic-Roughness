@@ -1,0 +1,4 @@
+mu 0.0 638.2  days (all)
+mu 0.4 2996.9 days (int)
+mu 0.4 31.61  days (non-int)
+mu 1.0 440.6  days (all)
