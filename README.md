@@ -1,6 +1,6 @@
 # Granular Material Simulation Analysis
 
-This repository contains the analysis scripts and processed data used to study granular materials made of rods, crosses, stars, and spheres. The analyses cover contacts, excluded volume, force distributions, packing height and fraction, overlap, and simulation time.
+This repository contains the analysis scripts and processed data used to study granular materials made of rods, crosses, stars, and spheres. The analyses cover contacts, force distributions, packing height and fraction, overlap, and simulation time.
 
 ## Repository Structure
 
@@ -20,16 +20,6 @@ Analyzes particle-particle contacts.
 - `contact.py`: Computes sphere-sphere contact statistics.
 - `contact_mean_std_sph_p_rod.txt`: Contact mean and standard-deviation data.
 - `contact_plot.pdf`: Generated contact plot.
-
-### `excluded_volume_mc/`
-
-Uses Monte Carlo calculations to estimate excluded volume and its dependence on mesoscopic roughness.
-
-- `excluded_volume_core.py`: Core excluded-volume calculations.
-- `excluded_volume_mc_mesoscopic_roughness.py`: Mesoscopic-roughness analysis.
-- `excluded_volume_reproduction_result.py`: Reproduces the reference result.
-- `excluded_volume_mc_mesoscopic_roughness.txt`: Processed results.
-- `excluded_volume_convergence.png` and `excluded_volume_convergence_roughness.png`: Convergence plots.
 
 ### `forces_distribution/`
 
@@ -94,10 +84,6 @@ python z_vs_packing_fraction.py
 
 cd ../contact_particle-particle
 python contact.py
-
-cd ../excluded_volume_mc
-python excluded_volume_mc_mesoscopic_roughness.py
-python excluded_volume_reproduction_result.py
 
 cd ../forces_distribution
 python forces_distribution.py
