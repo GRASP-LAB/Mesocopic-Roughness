@@ -6,11 +6,11 @@ from matplotlib.lines import Line2D
 # Update paths to match the contact data
 BASE_FOLDER = ""
 SAVE_PLOT_FOLDER = BASE_FOLDER + ""
-DATA_FILE = SAVE_PLOT_FOLDER + "sphere_contact_mean_std_sph_p_rod.txt"
+DATA_FILE = SAVE_PLOT_FOLDER + "contact_mean_std_sph_p_rod.txt"
 
 plt.rcParams['font.size'] = 20  # Default font size for all text
 plt.rcParams['axes.titlesize'] = 42  # Title font size
-plt.rcParams['axes.labelsize'] = 36  # Axis labels (x, y)
+plt.rcParams['axes.labelsize'] = 28  # Axis labels (x, y)
 plt.rcParams['xtick.labelsize'] = 30  # X-tick labels
 plt.rcParams['ytick.labelsize'] = 30  # Y-tick labels
 plt.rcParams['legend.fontsize'] = 20  # Legend font size
@@ -78,7 +78,7 @@ def add_semantic_legends(ax, colors, markers):
             Line2D([], [], color=colors["cross"], marker="s", linestyle="none", label="Cross"),
             Line2D([], [], color=colors["star"], marker="s", linestyle="none", label="Star"),
         ],
-        title="Type", loc="upper left", bbox_to_anchor=(0.00, 1.01),
+        title="Type", loc="lower left", bbox_to_anchor=(0.00, -0.01),
         fontsize=18, title_fontsize=20, frameon=False,
     )
     ax.add_artist(type_legend)
@@ -89,7 +89,7 @@ def add_semantic_legends(ax, colors, markers):
             Line2D([], [], color="black", marker=markers["0.4"], linestyle="none", label="0.4"),
             Line2D([], [], color="black", marker=markers["1.0"], linestyle="none", label="1.0"),
         ],
-        title="Friction", loc="upper left", bbox_to_anchor=(0.16, 1.01),
+        title="Friction", loc="lower left", bbox_to_anchor=(0.16, -0.01),
         fontsize=18, title_fontsize=20, frameon=False,
     )
 
@@ -130,12 +130,12 @@ def plot_contact_data(data, colors, markers, series_order):
                    alpha=1)
 
     ax.set_xlabel("Meso roughness")
-    ax.set_ylabel("Contact Number")
+    ax.set_ylabel("Particles-Particles Contacts Count")
     # ax.grid(alpha=0.25, which='both')
     ax.set_xscale('log')
     add_semantic_legends(ax, colors, markers)
 
-    output_path = SAVE_PLOT_FOLDER + "contact_plot_review.pdf"
+    output_path = SAVE_PLOT_FOLDER + "contact_plot.pdf"
     fig.savefig(output_path, bbox_inches='tight')
     print(f"Plot saved to {output_path}")
 

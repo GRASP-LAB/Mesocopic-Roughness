@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt  # type: ignore
 from matplotlib.lines import Line2D
 from scipy.optimize import curve_fit, minimize  # type: ignore
 
+# To reproduce article plot, play with norm_factor term in the plot_packing_series function.
+
 BASE_FOLDER = ""
 SAVE_PLOT_FOLDER = BASE_FOLDER + ""
 DATA_FILE = SAVE_PLOT_FOLDER + "maximum_height_mean_std_n_spheres_per_rod.txt"
@@ -40,7 +42,7 @@ FRICTION_VALUES = {"0.0": 0.0, "0.4": 0.4, "1.0": 1.0}
 MODULATION_SCALE = 0.31
 
 # Choose independently whether to subtract and/or divide by the star reference.
-SUBTRACT_REFERENCE = False
+SUBTRACT_REFERENCE = True
 DIVIDE_REFERENCE = False
 
 def split_series_name(name):
@@ -251,7 +253,7 @@ def plot_height_series(
     y = np.asarray(series["y"], dtype=float)
     yerr = np.asarray(series.get("yerr", np.zeros_like(y)), dtype=float)
 
-    reference = reference_fit["H1"]
+    reference = reference_fit["H1"] + reference_fit["HDelta"]
     y = normalize_observable(y, reference)
     yerr = normalize_error(yerr, reference)
 
@@ -283,6 +285,32 @@ def plot_height_series(
     ax.fill_between(x_line, height_minus, height_plus, color=color, alpha=0.07, linewidth=0)
     ax.set_xscale('log')
 
+def plot_height_at_zero_inset(ax, fits):
+    """Show fitted H_max at mu_meso=0 versus microscopic friction."""
+    inset = ax.inset_axes([0.05, 0.25, 0.35, 0.35])
+    inset_markers = {"0.0": "p", "0.4": "s", "1.0": "^"}
+
+    for family, color in COLORS.items():
+        family_labeled = False
+        for level, mu_micro in FRICTION_VALUES.items():
+            fit = fits.get(f"{family}{level}")
+            if fit is None:
+                continue
+
+            height = fit["H1"] + fit["HDelta"]
+            error = math.hypot(fit["H1_error"], fit["HDelta_error"])
+            inset.errorbar(
+                [mu_micro], [height], yerr=[error],
+                color=color, marker=inset_markers[level], linewidth=1.5,
+                capsize=2,
+                label=family.capitalize() if not family_labeled else "_nolegend_",
+            )
+            family_labeled = True
+
+    inset.set_title(r"$H_{\max}(0)$", fontsize=16)
+    inset.set_xlabel(r"$\mu_{\mathrm{micro}}$", fontsize=13)
+    inset.tick_params(axis="both", labelsize=12)
+    inset.set_xticks(list(FRICTION_VALUES.values()))
 
 def plot_packing_series(
     ax, name, series, fit_params, color, marker, cst, mu_micro, type,
@@ -295,8 +323,45 @@ def plot_packing_series(
     yerr = np.asarray(series.get("yerr", np.zeros_like(y)), dtype=float)
 
     mu_macro = macro_roughness_of(fit_params) if fit_params is not None else 0.0
-    norm_factor = packing_modulation_factor(mu_micro, scale_a, scale_b)
+    #Function to give Figure 7
+    def figure7():
+        return 1
+    #Function to give Figure 8
+    def figure8():
+        if "rod" in name:
+            normalization = packing_modulation_factor(mu_micro, scale_a, scale_b)
+        elif "cross" in name:
+            normalization = packing_modulation_factor(mu_micro, scale_a, scale_b)
+        elif "star" in name:
+            normalization = packing_modulation_factor(mu_micro, scale_a, scale_b)
+        else:
+            print("Unknown particle type: {}".format(name))
+        return normalization
+    #discussed with reviewer but ommited
+    def f_hard_core_excluded_volume():
+        if "rod" in name:
+            normalization = packing_modulation_factor(mu_micro, scale_a, scale_b)*5.0
+        elif "cross" in name:
+            normalization = packing_modulation_factor(mu_micro, scale_a, scale_b)*4.4346
+        elif "star" in name:
+            normalization = packing_modulation_factor(mu_micro, scale_a, scale_b)*4.1283
+        else:
+            print("Unknown particle type: {}".format(name))
+        return normalization
+    #discussed with reviewer but ommited
+    def f_mc_excluded_volume():
+        if "rod" in name:
+            normalization = packing_modulation_factor(mu_micro, scale_a, scale_b)*11.1594
+        elif "cross" in name:
+            normalization = packing_modulation_factor(mu_micro, scale_a, scale_b)*12.5048
+        elif "star" in name:
+            normalization = packing_modulation_factor(mu_micro, scale_a, scale_b)*12.8592
+        else:
+            print("Unknown particle type: {}".format(name))
+        return normalization
 
+    # change this by either figure7, figure8, f_hard_core_excluded_volume or f_mc_excluded_volume to normalize the data accordingly
+    norm_factor = f_hard_core_excluded_volume()
     y = y / norm_factor
     yerr = yerr / abs(norm_factor)
 
@@ -458,11 +523,12 @@ def main():
         family, level = split_series_name(name)
         plot_height_series(
             ax1, name, height_data[name], fits[name], COLORS[family], MARKERS[level],
-            mu_micro=level, type=family, reference_fit=fits[f"{family}1.0"],
+            mu_micro=level, type=family, reference_fit=fits[f"{family}{level}"],
         )
+    ax1.set_ylabel(r"$H_{\max}(0) - H_{\max}(\mu_{\mathrm{meso}})$")
+    plot_height_at_zero_inset(ax1, fits)
     ax1.set_xlabel(r"Meso roughness")
     ax1.set_ylabel(r"$(H_{\max} - H_{\max,\mathrm{ref}}) / H_{\max,\mathrm{ref}}$")
-    ax1.grid(alpha=0.25)
     ax1.set_xscale('log')
 
     fig2, ax2 = plt.subplots(figsize=DIM_SCREEN)
@@ -503,9 +569,9 @@ def main():
     fig2.tight_layout()
     fig3.tight_layout()
     end = "pdf"
-    fig1.savefig(SAVE_PLOT_FOLDER + "max_height_micro." + end)
-    fig2.savefig(SAVE_PLOT_FOLDER + "packing_fraction_micro." + end)
-    fig3.savefig(SAVE_PLOT_FOLDER + "macro_roughness_micro." + end)
+    fig1.savefig(SAVE_PLOT_FOLDER + "max_height." + end)
+    fig2.savefig(SAVE_PLOT_FOLDER + "packing_fraction." + end)
+    fig3.savefig(SAVE_PLOT_FOLDER + "macro_roughness." + end)
 
 
 if __name__ == "__main__":

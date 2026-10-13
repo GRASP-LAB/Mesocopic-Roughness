@@ -1,0 +1,7 @@
+==============================================================================
+Mesoscopic-roughness Rod / Cross / Star: multi-sphere excluded volume
+==============================================================================
+rod    n= 12  mu_meso=0.0167  V=16.5843  V_ex=185.0702 +/- 0.4520  V_rex=11.1594 +/- 0.0273  L=48.0
+cross  n= 12  mu_meso=0.0167  V=27.9393  V_ex=349.3767 +/- 0.6206  V_rex=12.5048 +/- 0.0222  L=48.0
+star   n= 12  mu_meso=0.0167  V=38.6704  V_ex=497.2692 +/- 0.7399  V_rex=12.8592 +/- 0.0191  L=48.0
+here L is the size of the box in which we sample the two shapes

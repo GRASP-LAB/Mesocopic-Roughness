@@ -130,7 +130,7 @@ def plot_contact_data(data, colors, markers, series_order):
                    alpha=1)
 
     ax.set_xlabel("Meso roughness")
-    ax.set_ylabel("Coordination Number")
+    ax.set_ylabel("Neighbouring Particles Count")
     # ax.grid(alpha=0.25, which='both')
     ax.set_xscale('log')
     add_semantic_legends(ax, colors, markers)
